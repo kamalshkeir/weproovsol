@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User</title>
+    <style>
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 90%;
+          margin: 0 auto;
+        }
+        #userForm {
+            width: 90%;
+          margin: 0 auto;
+        }
+        
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+        }
+        
+        tr:nth-child(even) {
+          background-color: #dddddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Users:</h1>
+    <table>
+        <tr>
+            <th>id</th>
+            <th>firstname</th>
+            <th>lastname</th>
+            <th>email</th>
+            <th>creation date</th>
+            <th>is service account</th>
+            <th>DELETE</th>
+        </tr>
+        {{range .users}}
+            <tr data-id="{{.id}}">
+                <td>{{.id}}</td>
+                <td>{{.firstname}}</td>
+                <td>{{.lastname}}</td>
+                <td>{{.email}}</td>
+                <td>{{.creationdate}}</td>
+                <td>{{.isserviceaccount}}</td>
+                <td><button class="deletebtn">X</button></td>
+            </tr>
+        {{end}}
+    </table>
+
+    <br>
+    <h2>Create New User:</h2>
+    <form id="userForm">
+        <label for="firstname"></label>
+        <input type="text" name="firstname" id="firstname" placeholder="John">
+        <label for="lastname"></label>
+        <input type="text" name="lastname" id="lastname" placeholder="Doe">
+        <label for="email"></label>
+        <input type="email" name="email" id="email" placeholder="john@example.com">
+        <button type="submit">Send</button>
+    </form>
+
+<script>
+    let deleteBtns = document.querySelectorAll(".deletebtn");
+    
+    deleteBtns.forEach(btn => {
+       btn.addEventListener("click",e => {
+            e.preventDefault();
+            fetch(`/user/${btn.closest("tr").dataset.id}`, {
+                method: 'DELETE', 
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                //body: JSON.stringify(data),
+            }).then(res => res.json())
+            .then(data => {
+                if (data.success && data.id) {
+                    let elem= document.querySelector(`tr[data-id="${data.id}"]`);
+                    elem.remove();
+                }
+            });
+       })
+    });
+
+    userForm.addEventListener("submit",(e) => {
+        e.preventDefault();
+        fetch(`/user`, {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "firstname":e.target.firstname.value,
+                "lastname":e.target.lastname.value,
+                "email":e.target.email.value,
+            }),
+        }).then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        });
+    })
+</script>
+</body>
+</html>
